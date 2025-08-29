@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useCallback, useRef } from 'react';
 
 type ImageStatus = {
@@ -17,7 +18,6 @@ export default function MultiImageUploaderWithProgressBar() {
   const [dragActive, setDragActive] = useState(false);
   const [images, setImages] = useState<ImageStatus[]>([]);
   const [format, setFormat] = useState<'jpeg' | 'png' | 'webp'>('jpeg');
-
 
   const handleClick = () => {
     inputRef.current?.click();
@@ -45,10 +45,11 @@ export default function MultiImageUploaderWithProgressBar() {
       file.type.startsWith('image/')
     );
 
-    const initialStatus = droppedFiles.map(file => ({
+    const initialStatus: ImageStatus[] = droppedFiles.map((file): ImageStatus => ({
       fileName: file.name,
       status: 'pending',
       progress: 0,
+      originalSize: file.size,
     }));
 
     setImages(initialStatus);
@@ -82,7 +83,7 @@ export default function MultiImageUploaderWithProgressBar() {
         updatedImages[i].status = 'done';
         updatedImages[i].progress = 100;
         updatedImages[i].url = url;
-      } catch (err) {
+      } catch {
         clearInterval(progressInterval);
         updatedImages[i].status = 'error';
         updatedImages[i].progress = 0;
@@ -90,7 +91,7 @@ export default function MultiImageUploaderWithProgressBar() {
 
       setImages([...updatedImages]);
     }
-  }, []);
+  }, [format]);
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -113,6 +114,7 @@ export default function MultiImageUploaderWithProgressBar() {
   }
 
   const formatSize = (bytes: number) => `${(bytes / 1024).toFixed(2)} KB`;
+  const allowedFormats = ['jpeg', 'png', 'webp'] as const;
 
   return (
     <div className="p-8">
@@ -136,7 +138,14 @@ export default function MultiImageUploaderWithProgressBar() {
       />
       <select
         value={format}
-        onChange={(e) => setFormat(e.target.value)}
+        onChange={
+          (e) => {
+            const value = e.target.value;
+            if (allowedFormats.includes(value as typeof allowedFormats[number])) {
+              setFormat(value as 'jpeg' | 'png' | 'webp');
+            }
+          }
+        }
         className="border p-2 rounded mb-4"
       >
         <option value="jpeg">JPEG</option>
@@ -159,7 +168,7 @@ export default function MultiImageUploaderWithProgressBar() {
               </div>
               {img.status === 'done' && img.url && (
                 <div className="mt-2">
-                  <img src={img.url} alt={`Compressed ${index}`} className="max-w-full h-auto rounded mb-2" />
+                  <Image src={img.url} alt={`Compressed ${index}`} className="max-w-full h-auto rounded mb-2" />
                   <p>
                     <strong>Original:</strong> {formatSize(img.originalSize)}<br />
                     <strong>Compressed:</strong> {formatSize(img.compressedSize!)}<br />

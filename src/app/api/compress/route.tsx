@@ -34,14 +34,16 @@ export async function POST(request: Request) {
         .toBuffer();
     }
 
-    return new Response(compressedBuffer, {
+    const uint8Array = new Uint8Array(compressedBuffer);
+
+    return new Response(uint8Array, {
       status: 200,
       headers: {
         'Content-Type': `image/${format}`,
         'Content-Disposition': 'inline',
       },
     });
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Compression failed' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
