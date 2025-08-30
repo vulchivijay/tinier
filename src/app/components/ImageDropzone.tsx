@@ -168,7 +168,7 @@ export default function MultiImageUploaderWithProgressBar() {
               </div>
               {img.status === 'done' && img.url && (
                 <div className="mt-2">
-                  <Image src={img.url} alt={`Compressed ${index}`} className="max-w-full h-auto rounded mb-2" />
+                  <Image src={img.url} alt={`Compressed ${index}`} width={100} height={100} className="mb-2" />
                   <p>
                     <strong>Original:</strong> {formatSize(img.originalSize)}<br />
                     <strong>Compressed:</strong> {formatSize(img.compressedSize!)}<br />
